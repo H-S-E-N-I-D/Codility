@@ -39,7 +39,7 @@ https://github.com/H-S-E-N-I-D/Codility/blob/main/PancakeLab/pancake-class-diagr
 
 ## 🚀 Steps to Run the Code
 
-1. Download the source code from the [GitHub repository](#https://github.com/H-S-E-N-I-D/Codility/tree/main/PancakeLab) (Replace with actual link).
+1. Download the source code from the [GitHub repository](#https://github.com/H-S-E-N-I-D/Codility/tree/main/PancakeLab).
 2. Extract and save the source into your workspace.
 3. Open **IntelliJ IDEA** and navigate to **File -> Open**.
 4. Browse to the source location and click **OK**.
