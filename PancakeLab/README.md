@@ -27,7 +27,7 @@ Pancake Lab is a Java-based application designed to streamline pancake ordering,
 ---
 ## ️ Class Diagram
 https://github.com/H-S-E-N-I-D/Codility/blob/main/PancakeLab/pancake-class-diagram.png
-
+![Pancake Lab](https://github.com/H-S-E-N-I-D/Codility/blob/main/PancakeLab/pancake-class-diagram.png)
 
 ## ⚙️ Prerequisites
 - **Java Development Kit (JDK) 17+**
