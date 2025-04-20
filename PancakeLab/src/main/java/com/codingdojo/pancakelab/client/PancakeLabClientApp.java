@@ -9,10 +9,7 @@ import com.codingdojo.pancakelab.security.UserRole;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import java.util.concurrent.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -29,30 +26,53 @@ public class PancakeLabClientApp {
             PancakeBuilderClient pancakeBuilder = PancakeLabClientFactory.createPancakeBuilderClient();
 
             ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
-            List<Callable<Void>> tasks = createOrderTasks(client, pancakeBuilder);
 
-            processTasks(executor, tasks);
-            LOGGER.info("All orders processed successfully");
+            // Create latch with total task count
+            CountDownLatch taskLatch = new CountDownLatch(ORDER_TASKS_COUNT + CANCEL_TASKS_COUNT);
+
+            List<Callable<Void>> tasks = createOrderTasks(client, pancakeBuilder, taskLatch);
+
+            // Log initial task count
+            LOGGER.log(Level.INFO, "Submitted {0} tasks (delivery: {1} , cancellation: {2} )", new Object[]{ORDER_TASKS_COUNT + CANCEL_TASKS_COUNT,
+                    ORDER_TASKS_COUNT,
+                    CANCEL_TASKS_COUNT});
+
+            processTasks(executor, tasks, taskLatch);
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "PancakeLab error", e);
         }
     }
 
     private List<Callable<Void>> createOrderTasks(PancakeLabClient client,
-                                                  PancakeBuilderClient pancakeBuilder) {
+                                                  PancakeBuilderClient pancakeBuilder,
+                                                  CountDownLatch taskLatch) {
         List<Callable<Void>> tasks = new ArrayList<>();
         OrderProcessor processor = new OrderProcessor(client, pancakeBuilder);
 
+        // Delivery tasks
         for (int i = 0; i < ORDER_TASKS_COUNT; i++) {
             tasks.add(() -> {
-                processor.placeOrderAndDeliver();
+                try {
+                    processor.placeOrderAndDeliver();
+                    LOGGER.fine("Completed delivery task");
+                } finally {
+                    taskLatch.countDown();
+                    LOGGER.fine("Remaining tasks: " + taskLatch.getCount());
+                }
                 return null;
             });
         }
 
+        // Cancellation tasks
         for (int i = 0; i < CANCEL_TASKS_COUNT; i++) {
             tasks.add(() -> {
-                processor.placeOrderAndCancel();
+                try {
+                    processor.placeOrderAndCancel();
+                    LOGGER.fine("Completed cancellation task");
+                } finally {
+                    taskLatch.countDown();
+                    LOGGER.fine("Remaining tasks: " + taskLatch.getCount());
+                }
                 return null;
             });
         }
@@ -60,9 +80,24 @@ public class PancakeLabClientApp {
         return tasks;
     }
 
-    private void processTasks(ExecutorService executor, List<Callable<Void>> tasks) {
+    private void processTasks(ExecutorService executor,
+                              List<Callable<Void>> tasks,
+                              CountDownLatch taskLatch) {
         try {
             List<Future<Void>> futures = executor.invokeAll(tasks);
+
+            // Create a thread to monitor completion
+            new Thread(() -> {
+                try {
+                    taskLatch.await();
+                    LOGGER.log(Level.INFO, "All {0} orders processed successfully", futures.size());
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    LOGGER.warning("Task monitoring interrupted");
+                }
+            }).start();
+
+            // Process futures as before
             for (Future<Void> future : futures) {
                 try {
                     future.get();
