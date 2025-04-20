@@ -38,12 +38,7 @@ Pancake Lab is a Java-based application designed to streamline pancake ordering,
 ---
 
 ## 🚀 Steps to Run the Code
-
-<<<<<<< HEAD
-1. Download the source code from the [#https://github.com/H-S-E-N-I-D/Codility/tree/main/PancakeLab](GIT).
-=======
 1. Download the source code from the [GitHub repository](https://github.com/H-S-E-N-I-D/Codility/tree/main/PancakeLab).
->>>>>>> 89febcbe136b5fdcfea2d502881263f5ff42bb3b
 2. Extract and save the source into your workspace.
 3. Open **IntelliJ IDEA** and navigate to **File -> Open**.
 4. Browse to the source location and click **OK**.
